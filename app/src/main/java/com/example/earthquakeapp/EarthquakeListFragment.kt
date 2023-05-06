@@ -25,7 +25,7 @@ class EarthquakeListFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.fragment_earthquake_list, container, false)
         mRecyclerView = view.findViewById<View>(R.id.list) as RecyclerView?
-        return view
+        return vie
 
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
