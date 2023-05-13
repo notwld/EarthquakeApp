@@ -6,10 +6,14 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.earthquakeapp.model.Earthquake
 import com.example.earthquakeapp.model.EarthquakeRecyclerViewAdapter
+import com.example.earthquakeapp.utils.DummyData
 
 
 class EarthquakeListFragment : Fragment() {
@@ -25,6 +29,28 @@ class EarthquakeListFragment : Fragment() {
 
         val view = inflater.inflate(R.layout.fragment_earthquake_list, container, false)
         mRecyclerView = view.findViewById<View>(R.id.list) as RecyclerView?
+
+        view.findViewById<Button>(R.id.addBtn).setOnClickListener {
+            val editTxt = view.findViewById<EditText>(R.id.newQuake)
+            val text = editTxt.text.toString()
+            if(text.isNotEmpty()){
+                val magnitudeString = text.split(" ")[1].replace("[^\\d.]".toRegex(), "") // Remove any non-numeric characters
+                val newEarthquake = Earthquake((mEarthquakes.size + 1).toString(), DummyData.now, text.split(magnitudeString)[0].toString(), null, magnitudeString.toDouble(), null)
+                mEarthquakes.add(newEarthquake)
+                mEarthquakeAdapter.notifyItemInserted(mEarthquakes.size - 1)
+                editTxt.setText("")
+            }
+            else{
+                Toast.makeText(context,"Please enter details",Toast.LENGTH_LONG).show()
+            }
+        }
+
+
+
+
+
+
+
         return view
 
     }
@@ -44,4 +70,6 @@ class EarthquakeListFragment : Fragment() {
         }
     }
 }
+
+
 
