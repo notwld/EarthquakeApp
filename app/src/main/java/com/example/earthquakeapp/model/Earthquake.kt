@@ -4,17 +4,20 @@ import android.location.Location
 import java.text.SimpleDateFormat
 import java.util.*
 
-class Earthquake
-    (id: String?, date: Date?, details: String?, location: Location?,
-    magnitude: Double, link: String? )
-    {
-        private var mId: String? = null
-        private var mDate: Date? = null
-        private var mDetails: String? = null
-        private var mLocation: Location? = null
-        private var mMagnitude = 0.0
-        private var mLink: String? = null
-        init {
+class Earthquake(
+    id: String?, date: Date?, details: String?, location: Location?,
+    magnitude: Double, link: String?
+) {
+    private var mId: String? = id
+    private var mDate: Date? = date ?: Date()
+    private var mDetails: String? = details
+    private var mLocation: Location? = location
+    private var mMagnitude = magnitude
+    private var mLink: String? = link
+
+
+
+init {
             mId = id
             mDate = date
             mDetails = details

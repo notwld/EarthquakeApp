@@ -6,28 +6,49 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.earthquakeapp.R
+import com.example.earthquakeapp.databinding.ListItemEarthquakeBinding
+import java.text.DecimalFormat
+import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.*
 
 class EarthquakeRecyclerViewAdapter(private val mEarthquakes: List<Earthquake>) : RecyclerView.Adapter<EarthquakeRecyclerViewAdapter.ViewHolder>()
 {
+    private val TIME_FORMAT: SimpleDateFormat = SimpleDateFormat("HH:mm", Locale.US)
+    private val MAGNITUDE_FORMAT: NumberFormat = DecimalFormat("0.0")
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view: View = LayoutInflater.from(parent.context).inflate( R.layout.list_item_earthquake, parent, false )
-        return ViewHolder(view)
+        val binding = ListItemEarthquakeBinding.inflate(
+            LayoutInflater.from(parent.context), parent, false
+        )
+        return ViewHolder(binding)
+
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.earthquake = mEarthquakes[position]
-        holder.detailsView.text = mEarthquakes[position].toString()
+        val earthquake = mEarthquakes[position]
+        holder.binding?.setEarthquake(earthquake);
+        holder.binding?.executePendingBindings();
     }
 
+
     override fun getItemCount(): Int { return mEarthquakes.size }
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val parentView: View
-        val detailsView: TextView
-        var earthquake: Earthquake? = null
+
+    inner class ViewHolder(binding: ListItemEarthquakeBinding) : RecyclerView.ViewHolder(binding.getRoot()) {
+        val binding: ListItemEarthquakeBinding? = binding
         init {
-            parentView = view
-            detailsView = view.findViewById(R.id.list_item_earthquake_details)
+            binding.setTimeformat(TIME_FORMAT)
+            binding.setMagnitudeformat(MAGNITUDE_FORMAT)
         }
-        override fun toString(): String { return super.toString() + " '" + detailsView.text + "'" }
+
+        override fun toString(): String {
+            val earthquake = binding?.getEarthquake()
+            val date = earthquake?.getDate()
+            val dateString = if (date != null) TIME_FORMAT.format(date) else "Unknown"
+            return super.toString() + " '" + (binding?.details?.text ?: "") + "' " + dateString
+        }
     }
+
+
 }
+

@@ -33,23 +33,35 @@ class EarthquakeListFragment : Fragment() {
         view.findViewById<Button>(R.id.addBtn).setOnClickListener {
             val editTxt = view.findViewById<EditText>(R.id.newQuake)
             val text = editTxt.text.toString()
-            if(text.isNotEmpty()){
-                val magnitudeString = text.split(" ")[1].replace("[^\\d.]".toRegex(), "") // Remove any non-numeric characters
-                val newEarthquake = Earthquake((mEarthquakes.size + 1).toString(), DummyData.now, text.split(magnitudeString)[0].toString(), null, magnitudeString.toDouble(), null)
-                mEarthquakes.add(newEarthquake)
-                mEarthquakeAdapter.notifyItemInserted(mEarthquakes.size - 1)
-                editTxt.setText("")
-            }
-            else{
-                Toast.makeText(context,"Please enter details",Toast.LENGTH_LONG).show()
+            val magnitudeString = text.split(" ")[1].replace(
+                "[^\\d.]".toRegex(),
+                ""
+            )
+            if (magnitudeString.isNotEmpty()) {
+                try {
+                    val magnitude = magnitudeString.toDouble()
+                    val newEarthquake = Earthquake(
+                        (mEarthquakes.size + 1).toString(),
+                        DummyData.now,
+                        text.split(magnitudeString)[0].toString(),
+                        null,
+                        magnitude,
+                        null
+                    )
+                    mEarthquakes.add(newEarthquake)
+                    mEarthquakeAdapter.notifyItemInserted(mEarthquakes.size - 1)
+                    editTxt.setText("")
+                } catch (e: NumberFormatException) {
+                    Toast.makeText(
+                        context,
+                        "Invalid magnitude: $magnitudeString",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } else {
+                Toast.makeText(context, "Please enter a magnitude", Toast.LENGTH_LONG).show()
             }
         }
-
-
-
-
-
-
 
         return view
 
