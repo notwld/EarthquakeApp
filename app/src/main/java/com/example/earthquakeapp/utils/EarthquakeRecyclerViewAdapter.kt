@@ -1,18 +1,16 @@
 package com.example.earthquakeapp.model
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.earthquakeapp.R
 import com.example.earthquakeapp.databinding.ListItemEarthquakeBinding
 import java.text.DecimalFormat
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.collections.ArrayList
 
-class EarthquakeRecyclerViewAdapter(private val mEarthquakes: List<Earthquake>) : RecyclerView.Adapter<EarthquakeRecyclerViewAdapter.ViewHolder>()
+class EarthquakeRecyclerViewAdapter(private val mEarthquakes: ArrayList<Earthquake?>) : RecyclerView.Adapter<EarthquakeRecyclerViewAdapter.ViewHolder>()
 {
     private val TIME_FORMAT: SimpleDateFormat = SimpleDateFormat("HH:mm", Locale.US)
     private val MAGNITUDE_FORMAT: NumberFormat = DecimalFormat("0.0")
