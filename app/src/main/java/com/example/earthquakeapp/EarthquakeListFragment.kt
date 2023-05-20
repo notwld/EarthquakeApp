@@ -3,6 +3,8 @@ package com.example.earthquakeapp
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -16,6 +18,7 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.example.earthquakeapp.PreferencesActivity.Companion.PREF_UPDATE_FREQ
 import com.example.earthquakeapp.model.EarthquakeRecyclerViewAdapter
 import com.example.earthquakeapp.model.EarthquakeViewModel
 import kotlinx.coroutines.Job
@@ -26,17 +29,27 @@ class EarthquakeListFragment : Fragment() {
     private var mRecyclerView: RecyclerView? = null
     private var mSwipeToRefreshView: SwipeRefreshLayout? = null
     private var mMinimumMagnitude = 0
-
+    private var autoUpdateInterval: Long = 0
+    private val mHandler = Handler(Looper.getMainLooper())
+    private var autoUpdateRunnable: Runnable? = null
+    private var updateFrequency: Long = 60
     private val eqViewModel: EarthquakeViewModel by viewModels()
     private var job: Job? = null
+    private fun getUpdateFrequency(): Long {
+        val sharedPreferences = requireContext().getSharedPreferences("settings", Context.MODE_PRIVATE)
+        return sharedPreferences.getLong("updateFrequency", 60) // Default to 60 seconds if not found
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d("EarthquakeList", "got here 1")
-
+        val prefs = context?.let { PreferenceManager.getDefaultSharedPreferences(it) }
+        if (prefs != null) {
+            autoUpdateInterval = prefs.getString(PREF_UPDATE_FREQ, "60")!!.toLong()
+        }
     }
     private fun updateFromPreferences() {
-        val prefs: SharedPreferences? = getContext()?.let {
+        val prefs: SharedPreferences? = context?.let {
             PreferenceManager.getDefaultSharedPreferences(
                 it
             )
@@ -45,12 +58,29 @@ class EarthquakeListFragment : Fragment() {
             mMinimumMagnitude = prefs.getString(PreferencesActivity.PREF_MIN_MAG, "3")!!.toInt()
         }
     }
+    private fun startAutomaticUpdates() {
+        updateFrequency = getUpdateFrequency()
+
+        autoUpdateRunnable = object : Runnable {
+            override fun run() {
+                updateEarthquakes()
+                mHandler.postDelayed(this, updateFrequency * 1000)
+            }
+        }
+        mHandler.postDelayed(autoUpdateRunnable!!, updateFrequency * 1000)
+    }
+    private fun stopAutomaticUpdates() {
+        autoUpdateRunnable?.let {
+            mHandler.removeCallbacks(it)
+            autoUpdateRunnable = null
+        }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_earthquake_list, container, false)
         mSwipeToRefreshView = view.findViewById(R.id.swipe);
         mRecyclerView = view.findViewById<View>(R.id.list) as RecyclerView?
@@ -73,13 +103,18 @@ class EarthquakeListFragment : Fragment() {
             updateEarthquakes()
             mSwipeToRefreshView!!.isRefreshing = false
         }
+        val autoUpdateRunnable = Runnable {
+            updateEarthquakes()
+            autoUpdateRunnable?.let { mHandler.postDelayed(it, autoUpdateInterval * 60 * 1000) }
+        }
+        mHandler.postDelayed(autoUpdateRunnable, autoUpdateInterval * 60 * 1000)
     }
 
 
     protected fun updateEarthquakes() {
-        job = viewLifecycleOwner.lifecycleScope.launch {
-            val earthquakes = eqViewModel.loadEarthquakes()
-            mRecyclerView?.adapter = EarthquakeRecyclerViewAdapter(earthquakes) }
+        viewLifecycleOwner.lifecycleScope.launch {
+            setEarthquakes()
+        }
     }
 
     override fun onStart() {
@@ -92,6 +127,11 @@ class EarthquakeListFragment : Fragment() {
         super.onStop()
         job?.cancel()
     }
+    override fun onDestroy() {
+        super.onDestroy()
+        stopAutomaticUpdates()
+    }
+
     protected suspend fun setEarthquakes(){
         val earthquakes = eqViewModel.loadEarthquakes()
 
