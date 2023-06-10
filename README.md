@@ -1,5 +1,5 @@
 # EarthquakeApp
-Task for my Mobile App Dev Lab#03
+Task for my Mobile App Dev Labs
 
 # RecyclerView in Kotlin
 This repository contains an implementation of RecyclerView in Kotlin. RecyclerView is a more advanced and flexible version of ListView that allows for efficient scrolling through large datasets. This implementation demonstrates how to use the RecyclerView with Kotlin.
